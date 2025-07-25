@@ -47,7 +47,6 @@ resource "aws_launch_template" "dev_launch_template" {
   }
 
 
-
 }
 
 resource "aws_autoscaling_group" "dev_autoscaling_group" {
@@ -68,3 +67,6 @@ resource "aws_autoscaling_group" "dev_autoscaling_group" {
     propagate_at_launch = true
   }
 }
+
+
+
