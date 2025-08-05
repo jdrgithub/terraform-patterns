@@ -7,8 +7,8 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  vpc_id = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
   availability_zone = "us-east-1a"
 }
 
@@ -27,43 +27,43 @@ resource "aws_routing_table" "public" {
 
 resource "aws_routing_table_association" "public" {
   routing_table_id = aws_routing_table.public.id
-  subnet_id = aws_subnet.public.id
+  subnet_id        = aws_subnet.public.id
 }
 
 resource "aws_security_group" "allow_ssh" {
-  name = "allow_ssh"
+  name        = "allow_ssh"
   description = "Allow SSH"
-  vpc_id = aws_vpc_id.main.id
+  vpc_id      = aws_vpc_id.main.id
 
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 data "aws_ami" "amazon_linux" {
   most_recent = true
-  owners = ["amazon"]
+  owners      = ["amazon"]
   filter {
-    name = "name"
+    name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
 resource "aws_instance" "example" {
-  ami = data.aws_ami.amazon_linux.id
-  instance_type = "t2.micro"
-  subnet_id = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.public.id
+  vpc_security_group_ids      = [aws_security_group.allow_ssh.id]
   associate_public_ip_address = true
 
   user_data = <<EOF
@@ -78,14 +78,14 @@ resource "aws_instance" "example" {
     name = "example-instance"
   }
 
-  
+
 }
 
 resource "aws_s3_bucket" "example_bucket" {
   bucket = "bucket-name-123"
 
   tags = {
-    Name = "example-bucket"
+    Name        = "example-bucket"
     Environment = "dev"
   }
 }
@@ -115,12 +115,12 @@ resource "aws_s3_bucket_policy" "example" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowAccountAccess"
-        Effect    = "Allow"
+        Sid    = "AllowAccountAccess"
+        Effect = "Allow"
         Principal = {
           AWS = "arn:aws:iam::123456789012:role/my-app-role"
         }
-        Action    = [
+        Action = [
           "s3:GetObject",
           "s3:PutObject",
           "s3:DeleteObject",
@@ -132,10 +132,10 @@ resource "aws_s3_bucket_policy" "example" {
         ]
       },
       {
-        Sid      = "DenyPublicAccess"
-        Effect   = "Deny"
+        Sid       = "DenyPublicAccess"
+        Effect    = "Deny"
         Principal = "*"
-        Action   = "s3:*"
+        Action    = "s3:*"
         Resource = [
           "${aws_s3_bucket.example.arn}",
           "${aws_s3_bucket.example.arn}/*"

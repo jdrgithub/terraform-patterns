@@ -16,3 +16,15 @@ module "s3_bucket" {
   bucket_name = var.bucket_name
   environment = var.environment
 }
+
+module "lambda_processor" {
+  source               = "../../modules/lambda_s3_processor"
+  lambda_function_name = "s3-batch-file-processor"
+  lambda_handler       = "handler.lambda_handler"
+  lambda_runtime       = "python3.12"
+  source_code_path     = "${path.module}/lambda/lambda.zip"
+
+  lambda_bucket_name   = module.s3_bucket.bucket_name
+  lambda_input_prefix  = "incoming/"
+  lambda_output_prefix = "processed/"
+}
