@@ -9,7 +9,11 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes" # Official Kubernetes provider for interacting with the cluster
-      version = "~> 2.30"              # Compatible with Terraform 1.x and Kubernetes 1.29+
+      version = "~> 2.30"              # Compatible with Terraform 1.x and Kubernetes 1.28+
+    }
+    helm = {
+      source  = "hashicorp/helm" # Official Helm provider for installing Helm charts
+      version = "~> 2.12"        # Compatible with Terraform 1.x
     }
   }
 

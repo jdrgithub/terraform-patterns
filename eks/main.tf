@@ -1,36 +1,205 @@
-provider "aws" {
-  region = var.aws_region
-  # Configures the AWS provider with the region specified in variables.tf (e.g. us-east-1)
-}
+# =============================================================================
+# EKS Cluster
+# =============================================================================
+# Create EKS cluster
+resource "aws_eks_cluster" "cluster" {
+  name     = var.cluster_name
+  role_arn = aws_iam_role.eks_cluster.arn
+  version  = var.kubernetes_version
 
-provider "kubernetes" {
-  # This provider lets Terraform apply changes to Kubernetes resources (like namespaces, deployments)
-  # To connect, it needs 3 things:
-  host                   = data.aws_eks_cluster.cluster.endpoint                                    # API server URL
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority[0].data) # TLS cert for API trust
-  token                  = data.aws_eks_cluster_auth.cluster.token                                  # Auth token (short-lived)
-}
+  # VPC configuration
+  vpc_config {
+    subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
+    endpoint_private_access = true
+    endpoint_public_access  = true
+    public_access_cidrs     = ["0.0.0.0/0"]  # Allow public access from anywhere
+  }
 
-# Pull in availability zone data for the selected region
-data "aws_availability_zones" "available" {}
+  # Enable control plane logging to CloudWatch
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws" # Uses a public, reusable VPC module from the Terraform Registry
-  version = "5.1.0"                         # Specific version to avoid unexpected changes
-
-  name = "eks-vpc"     # VPC name for tagging/identification
-  cidr = "10.0.0.0/16" # CIDR block for the entire VPC (can hold 65k+ IPs)
-
-  azs = slice(data.aws_availability_zones.available.names, 0, 2)
-  # Automatically picks the first 2 AZs in the selected region (to create subnets across zones)
-
-  public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
-  # Defines two public subnets in separate AZs — one per zone — for placing EKS worker nodes
-
-  enable_dns_hostnames = true # Needed so EC2 instances get public DNS names
-  enable_dns_support   = true # Enables internal DNS resolution (required for EKS to work properly)
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster_policy,
+    aws_subnet.private,
+    aws_subnet.public
+  ]
 
   tags = {
-    "Name" = "eks-vpc" # Adds a Name tag to all resources created by this module
+    Name = var.cluster_name
   }
+}
+
+# =============================================================================
+# EKS Node Group
+# =============================================================================
+# Create managed node group with 2-3 t-class instances
+resource "aws_eks_node_group" "main" {
+  cluster_name    = aws_eks_cluster.cluster.name
+  node_group_name = "main-node-group"
+  node_role_arn   = aws_iam_role.eks_node_group.arn
+  subnet_ids      = aws_subnet.private[*].id  # Place nodes in private subnets
+  version         = var.kubernetes_version
+
+  # Instance configuration
+  instance_types = [var.instance_type]
+  capacity_type  = "ON_DEMAND"
+
+  # Scaling configuration
+  scaling_config {
+    desired_size = var.desired_size
+    max_size     = var.max_size
+    min_size     = var.min_size
+  }
+
+  # Update configuration
+  update_config {
+    max_unavailable = 1
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_worker_node_policy,
+    aws_iam_role_policy_attachment.eks_cni_policy,
+    aws_iam_role_policy_attachment.ec2_read_only_policy
+  ]
+
+  tags = {
+    Name = "${var.cluster_name}-node-group"
+  }
+}
+
+# =============================================================================
+# EKS Add-ons
+# =============================================================================
+# VPC CNI Add-on (required for pod networking)
+resource "aws_eks_addon" "vpc_cni" {
+  cluster_name = aws_eks_cluster.cluster.name
+  addon_name   = "vpc-cni"
+  addon_version = "v1.16.0-eksbuild.1"  # Latest compatible version
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+# CoreDNS Add-on (required for DNS resolution)
+resource "aws_eks_addon" "coredns" {
+  cluster_name = aws_eks_cluster.cluster.name
+  addon_name   = "coredns"
+  addon_version = "v1.10.1-eksbuild.1"  # Latest compatible version
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+# kube-proxy Add-on (required for service networking)
+resource "aws_eks_addon" "kube_proxy" {
+  cluster_name = aws_eks_cluster.cluster.name
+  addon_name   = "kube-proxy"
+  addon_version = "v1.28.1-eksbuild.1"  # Latest compatible version
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+# EBS CSI Driver Add-on (for persistent volumes)
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name = aws_eks_cluster.cluster.name
+  addon_name   = "aws-ebs-csi-driver"
+  addon_version = "v2.20.0-eksbuild.1"  # Latest compatible version
+
+  depends_on = [aws_eks_node_group.main]
+}
+
+# =============================================================================
+# aws-auth ConfigMap
+# =============================================================================
+# Create aws-auth ConfigMap to allow EKS node group to join the cluster
+resource "kubernetes_config_map_v1_data" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = yamlencode([
+      {
+        rolearn  = aws_iam_role.eks_node_group.arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups = [
+          "system:bootstrappers",
+          "system:nodes"
+        ]
+      }
+    ])
+  }
+
+  depends_on = [aws_eks_cluster.cluster]
+}
+
+# =============================================================================
+# Metrics Server
+# =============================================================================
+# Install Metrics Server for resource monitoring
+resource "helm_release" "metrics_server" {
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+  version    = "6.3.0"
+
+  set {
+    name  = "args[0]"
+    value = "--kubelet-insecure-tls"
+  }
+
+  depends_on = [aws_eks_cluster.cluster]
+}
+
+# =============================================================================
+# AWS Load Balancer Controller
+# =============================================================================
+# Install AWS Load Balancer Controller
+resource "helm_release" "aws_load_balancer_controller" {
+  name       = "aws-load-balancer-controller"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  version    = "1.6.1"
+
+  set {
+    name  = "clusterName"
+    value = aws_eks_cluster.cluster.name
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.aws_load_balancer_controller.arn
+  }
+
+  depends_on = [aws_eks_cluster.cluster]
+}
+
+# =============================================================================
+# Cluster Autoscaler
+# =============================================================================
+# Install Cluster Autoscaler
+resource "helm_release" "cluster_autoscaler" {
+  name       = "cluster-autoscaler"
+  repository = "https://kubernetes.github.io/autoscaler"
+  chart      = "cluster-autoscaler"
+  namespace  = "kube-system"
+  version    = "9.35.0"
+
+  set {
+    name  = "autoDiscovery.clusterName"
+    value = aws_eks_cluster.cluster.name
+  }
+
+  set {
+    name  = "awsRegion"
+    value = var.aws_region
+  }
+
+  set {
+    name  = "rbac.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = aws_iam_role.cluster_autoscaler.arn
+  }
+
+  depends_on = [aws_eks_cluster.cluster]
 }
