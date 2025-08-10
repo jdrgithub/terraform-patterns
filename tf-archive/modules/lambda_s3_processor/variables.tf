@@ -31,3 +31,8 @@ variable "lambda_input_prefix" {
 variable "lambda_output_prefix" {
   description = "Prefix to save processed file (e.g. processed/)"
 }
+
+variable "source_code_hash" {
+  description = "Precomputed base64-encoded hash of the zip file"
+  type        = string
+}

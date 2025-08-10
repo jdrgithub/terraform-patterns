@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     logger.info(f"Scanning prefix: {input_prefix} -> output will go to: {output_prefix}")
 
     # Use the S3 paginator to list objects in bucket with prefix
-    paginator = s3.get_paginator('list_object_v2')
+    paginator = s3.get_paginator('list_objects_v2')
     pages = paginator.paginate(Bucket=bucket_name, Prefix=input_prefix)
     
     # Initializes counters and list for failed files

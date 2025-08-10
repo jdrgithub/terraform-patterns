@@ -59,7 +59,7 @@ resource "aws_lambda_function" "this" {
   filename      = var.source_code_path
   timeout       = 30
 
-  source_code_hash = filebase64sha256(var.source_code_path)
+  source_code_hash = var.source_code_hash
 
   environment {
     variables = {

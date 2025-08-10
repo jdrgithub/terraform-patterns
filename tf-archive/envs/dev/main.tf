@@ -22,7 +22,8 @@ module "lambda_processor" {
   lambda_function_name = "s3-batch-file-processor"
   lambda_handler       = "handler.lambda_handler"
   lambda_runtime       = "python3.12"
-  source_code_path     = "${path.module}/lambda/lambda.zip"
+  source_code_path     = "../../modules/lambda_s3_processor/lambda/lambda.zip"
+  source_code_hash     = filebase64sha256("../../modules/lambda_s3_processor/lambda/lambda.zip")
 
   lambda_bucket_name   = module.s3_bucket.bucket_name
   lambda_input_prefix  = "incoming/"

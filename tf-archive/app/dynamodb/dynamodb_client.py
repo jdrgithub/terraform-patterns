@@ -3,7 +3,7 @@ import boto3
 # Initialize Dynamodb client
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 
-# Reference your table
+# Reference table
 table = dynamodb.Table('contact-table')
 
 # Put and item
