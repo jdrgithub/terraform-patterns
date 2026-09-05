@@ -2,6 +2,7 @@
 **/*.tfstate
 **/*.tfstate.backup
 **/.terraform/
+**/.terraform.d
 
 # Ignore environment tfvars 
 # Ignore in any subdir
