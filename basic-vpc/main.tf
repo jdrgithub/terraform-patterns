@@ -1,25 +1,10 @@
-terraform {
-  required_version = ">= 1.6.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = "us-east-1"
-}
-
 resource "aws_vpc" "main" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "terraform-demo-vpc"
+    Name = "${var.name_prefix}-vpc"
   }
 }
 
@@ -27,29 +12,29 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "terraform-demo-igw"
+    Name = "${var.name_prefix}-igw"
   }
 }
 
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
+  cidr_block              = var.public_subnet_cidr
+  availability_zone       = var.availability_zone
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "terraform-demo-public-subnet"
+    Name = "${var.name_prefix}-public-subnet"
   }
 }
 
 resource "aws_subnet" "private" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-east-1a"
+  availability_zone       = var.availability_zone
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "terraform-demo-private-subnet"
+    Name = "${var.name_prefix}-private-subnet"
   }
 }
 
@@ -57,7 +42,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "terraform-demo-public-rt"
+    Name = "${var.name_prefix}-public-rt"
   }
 }
 
@@ -76,7 +61,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "terraform-demo-private-rt"
+    Name = "${var.name_prefix}-private-rt"
   }
 }
 
@@ -89,7 +74,7 @@ resource "aws_network_acl" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "terraform-demo-public-nacl"
+    Name = "${var.name_prefix}-public-nacl"
   }
 }
 
