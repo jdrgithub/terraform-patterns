@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     bucket       = "jdr-tf-state-b2aee5bfcf8bd67ef564816936"
-    key          = "basic-vpc/terraform-tfstate"
+    key          = "envs/dev/terraform-tfstate"
     region       = "us-east-1"
     use_lockfile = true
   }

@@ -17,24 +17,28 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_subnet" "public" {
+  for_each = var.subnets
+
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.availability_zone
+  cidr_block              = each.value.public_cidr
+  availability_zone       = each.key
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.name_prefix}-public-subnet"
+    Name = "${var.name_prefix}-public-subnet-${each.key}"
   }
 }
 
 resource "aws_subnet" "private" {
+  for_each = var.subnets
+
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = var.availability_zone
-  map_public_ip_on_launch = true
+  cidr_block              = each.value.private_cidr
+  availability_zone       = each.key
+  map_public_ip_on_launch = false
 
   tags = {
-    Name = "${var.name_prefix}-private-subnet"
+    Name = "${var.name_prefix}-private-subnet-${each.key}"
   }
 }
 
@@ -53,7 +57,9 @@ resource "aws_route" "public_internet" {
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+  for_each = aws_subnet.public
+
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -66,7 +72,9 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.private.id
+  for_each = aws_subnet.private
+
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private.id
 }
 
@@ -78,10 +86,26 @@ resource "aws_network_acl" "public" {
   }
 }
 
+resource "aws_network_acl_association" "public" {
+  for_each = aws_subnet.public
+
+  network_acl_id = aws_network_acl.public.id
+  subnet_id      = each.value.id
+}
+
 resource "aws_network_acl_rule" "public_inbound_allow_all" {
   network_acl_id = aws_network_acl.public.id
   rule_number    = 100
   egress         = false
+  protocol       = "-1" # every IP protocol
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+}
+
+resource "aws_network_acl_rule" "public_outbound_allow_all" {
+  network_acl_id = aws_network_acl.public.id
+  rule_number    = 100
+  egress         = true
   protocol       = "-1" # every IP protocol
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
