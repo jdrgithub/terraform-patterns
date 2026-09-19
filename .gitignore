@@ -12,5 +12,8 @@
 # Ignore logs or artifacts
 **/*.log
 
+# Ignore .vscode
+**/*.vscode
+
 # Ignore virtual env
 .venv/
