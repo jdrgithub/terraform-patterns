@@ -16,14 +16,14 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   description = "Kubernetes version for the EKS control plane"
   type        = string
-  default     = "1.28"  # Latest supported version
+  default     = "1.28" # Latest supported version
 }
 
 # EC2 instance type for worker nodes
 variable "instance_type" {
   description = "EC2 instance type used by EKS node group"
   type        = string
-  default     = "t3.medium"  # Good balance of performance and cost
+  default     = "t3.medium" # Good balance of performance and cost
 }
 
 # Minimum number of worker nodes in the node group

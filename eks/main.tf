@@ -12,7 +12,7 @@ resource "aws_eks_cluster" "cluster" {
     subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
     endpoint_private_access = true
     endpoint_public_access  = true
-    public_access_cidrs     = ["0.0.0.0/0"]  # Allow public access from anywhere
+    public_access_cidrs     = ["0.0.0.0/0"] # Allow public access from anywhere
   }
 
   # Enable control plane logging to CloudWatch
@@ -37,7 +37,7 @@ resource "aws_eks_node_group" "main" {
   cluster_name    = aws_eks_cluster.cluster.name
   node_group_name = "main-node-group"
   node_role_arn   = aws_iam_role.eks_node_group.arn
-  subnet_ids      = aws_subnet.private[*].id  # Place nodes in private subnets
+  subnet_ids      = aws_subnet.private[*].id # Place nodes in private subnets
   version         = var.kubernetes_version
 
   # Instance configuration
@@ -72,36 +72,36 @@ resource "aws_eks_node_group" "main" {
 # =============================================================================
 # VPC CNI Add-on (required for pod networking)
 resource "aws_eks_addon" "vpc_cni" {
-  cluster_name = aws_eks_cluster.cluster.name
-  addon_name   = "vpc-cni"
-  addon_version = "v1.16.0-eksbuild.1"  # Latest compatible version
+  cluster_name  = aws_eks_cluster.cluster.name
+  addon_name    = "vpc-cni"
+  addon_version = "v1.16.0-eksbuild.1" # Latest compatible version
 
   depends_on = [aws_eks_node_group.main]
 }
 
 # CoreDNS Add-on (required for DNS resolution)
 resource "aws_eks_addon" "coredns" {
-  cluster_name = aws_eks_cluster.cluster.name
-  addon_name   = "coredns"
-  addon_version = "v1.10.1-eksbuild.1"  # Latest compatible version
+  cluster_name  = aws_eks_cluster.cluster.name
+  addon_name    = "coredns"
+  addon_version = "v1.10.1-eksbuild.1" # Latest compatible version
 
   depends_on = [aws_eks_node_group.main]
 }
 
 # kube-proxy Add-on (required for service networking)
 resource "aws_eks_addon" "kube_proxy" {
-  cluster_name = aws_eks_cluster.cluster.name
-  addon_name   = "kube-proxy"
-  addon_version = "v1.28.1-eksbuild.1"  # Latest compatible version
+  cluster_name  = aws_eks_cluster.cluster.name
+  addon_name    = "kube-proxy"
+  addon_version = "v1.28.1-eksbuild.1" # Latest compatible version
 
   depends_on = [aws_eks_node_group.main]
 }
 
 # EBS CSI Driver Add-on (for persistent volumes)
 resource "aws_eks_addon" "ebs_csi" {
-  cluster_name = aws_eks_cluster.cluster.name
-  addon_name   = "aws-ebs-csi-driver"
-  addon_version = "v2.20.0-eksbuild.1"  # Latest compatible version
+  cluster_name  = aws_eks_cluster.cluster.name
+  addon_name    = "aws-ebs-csi-driver"
+  addon_version = "v2.20.0-eksbuild.1" # Latest compatible version
 
   depends_on = [aws_eks_node_group.main]
 }

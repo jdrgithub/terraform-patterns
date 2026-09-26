@@ -74,7 +74,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "iam:AWSServiceName": "elasticloadbalancing.amazonaws.com"
+            "iam:AWSServiceName" : "elasticloadbalancing.amazonaws.com"
           }
         }
       },
@@ -149,7 +149,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "ec2:CreateAction": "CreateSecurityGroup"
+            "ec2:CreateAction" : "CreateSecurityGroup"
           }
         }
       },
@@ -161,7 +161,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:ec2:*:*:security-group/*"
         Condition = {
           StringEquals = {
-            "ec2:CreateAction": "CreateSecurityGroup"
+            "ec2:CreateAction" : "CreateSecurityGroup"
           }
         }
       },
@@ -189,7 +189,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateRule"
+            "elasticloadbalancing:CreateAction" : "CreateRule"
           }
         }
       },
@@ -201,7 +201,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:listener-rule/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateRule"
+            "elasticloadbalancing:CreateAction" : "CreateRule"
           }
         }
       },
@@ -213,7 +213,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateTargetGroup"
+            "elasticloadbalancing:CreateAction" : "CreateTargetGroup"
           }
         }
       },
@@ -225,7 +225,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:targetgroup/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateTargetGroup"
+            "elasticloadbalancing:CreateAction" : "CreateTargetGroup"
           }
         }
       },
@@ -237,7 +237,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -249,7 +249,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:loadbalancer/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -262,7 +262,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -275,7 +275,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:loadbalancer/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -288,7 +288,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:targetgroup/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -301,7 +301,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Resource = "arn:aws:elasticloadbalancing:*:*:listener-rule/*"
         Condition = {
           StringEquals = {
-            "elasticloadbalancing:CreateAction": "CreateLoadBalancer"
+            "elasticloadbalancing:CreateAction" : "CreateLoadBalancer"
           }
         }
       },
@@ -345,7 +345,7 @@ resource "aws_iam_role" "aws_load_balancer_controller" {
         }
         Condition = {
           StringEquals = {
-            "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:kube-system:aws-load-balancer-controller"
           }
         }
       }
@@ -398,7 +398,7 @@ resource "aws_iam_role" "cluster_autoscaler" {
         }
         Condition = {
           StringEquals = {
-            "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:kube-system:cluster-autoscaler"
+            "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:kube-system:cluster-autoscaler"
           }
         }
       }

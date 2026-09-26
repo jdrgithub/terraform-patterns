@@ -1,8 +1,8 @@
-variable vpc_cidr {
+variable "vpc_cidr" {
   type = string
-} 
+}
 
-variable name_postfix {
+variable "name_postfix" {
   type = string
 }
 
