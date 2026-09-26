@@ -78,7 +78,7 @@ resource "aws_vpc_security_group_egress_rule" "allow_http" {
   ip_protocol = "tcp"
 }
 
-resource "aws_vpc_security_group_egress_rule" "allow_https" {
+resource "aws_vpc_security_group_egress_rule" "allow_" {
   security_group_id = aws_security_group.ec2.id
 
   cidr_ipv4   = var.sg_cidr
@@ -105,15 +105,46 @@ resource "aws_vpc_security_group_egress_rule" "allow_ec2_connect" {
   ip_protocol = "tcp"
 }
 
-resource "aws_instance" "demo" {
-  ami                         = data.aws_ami.amazon_linux.id
-  instance_type               = "t3.micro"
-  subnet_id                   = data.aws_subnet.public.id
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.ec2.id]
-  iam_instance_profile        = module.iam.instance_profile_name
+# resource "aws_instance" "demo" {
+#   ami                         = data.aws_ami.amazon_linux.id
+#   instance_type               = "t3.micro"
+#   subnet_id                   = data.aws_subnet.public.id
+#   associate_public_ip_address = true
+#   vpc_security_group_ids      = [aws_security_group.ec2.id]
+#   iam_instance_profile        = module.iam.instance_profile_name
 
-  user_data = <<-EOF
+#   user_data = <<-EOF
+#     #!/bin/bash
+#     dnf install -y nginx
+#     systemctl enable nginx
+#     systemctl start nginx
+
+#     echo "<h1>Terraform EC2 Demo</h1>" > /usr/share/nginx/html/index.html
+#   EOF
+
+#   tags = {
+#     Name = "demo-web"
+#   }
+# }
+
+resource "aws_launch_template" "web" {
+  name_prefix            = "web-"
+  image_id               = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
+  # vpc_security_groups_ids doesn't work.  add below to network_interfaces
+  # https://github.com/hashicorp/terraform-provider-aws/issues/4570 
+  # vpc_security_group_ids = [aws_security_group.ec2.id] 
+  
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups = [aws_security_group.ec2.id]
+  }
+
+  iam_instance_profile {
+    name = module.iam.instance_profile_name
+  }
+
+  user_data = base64encode(<<-EOF
     #!/bin/bash
     dnf install -y nginx
     systemctl enable nginx
@@ -121,11 +152,35 @@ resource "aws_instance" "demo" {
 
     echo "<h1>Terraform EC2 Demo</h1>" > /usr/share/nginx/html/index.html
   EOF
+  )
 
-  tags = {
-    Name = "demo-web"
+  tag_specifications {
+    resource_type = "instance"
+
+    tags = {
+      Name = "web"
+    }
   }
 }
+
+resource "aws_autoscaling_group" "web" {
+  name = "web-asg"
+
+  min_size         = 1
+  max_size         = 2
+  desired_capacity = 2
+
+  vpc_zone_identifier = [
+    module.vpc.subnet_ids.public.us-east-1a,
+    module.vpc.subnet_ids.public.us-east-1b
+  ]
+
+  launch_template {
+    id      = aws_launch_template.web.id
+    version = aws_launch_template.web.latest_version
+  }
+}
+
 
 
 
