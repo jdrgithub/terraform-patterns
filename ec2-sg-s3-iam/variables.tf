@@ -23,14 +23,25 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "subnets" {
-  description = "Public and private subnet CIDRs organizaed by Availability Zone"
+variable "public_subnets" {
+  description = "Private subnet CIDRs organizaed by Availability Zone"
 
   type = map(
     object(
       {
         public_cidr  = string
-        private_cidr = string
+      }
+    )
+  )
+}
+
+variable "private_subnets" {
+  description = "Private subnet CIDRs organizaed by Availability Zone"
+
+  type = map(
+    object(
+      {
+        private_cidr  = string
       }
     )
   )

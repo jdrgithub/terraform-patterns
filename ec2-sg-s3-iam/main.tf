@@ -14,7 +14,8 @@ module "vpc" {
 
   vpc_cidr    = var.vpc_cidr
   name_prefix = var.name_prefix
-  subnets     = var.subnets
+  public_subnets     = var.public_subnets
+  private_subnets = var.private_subnets
 }
 
 data "aws_ami" "amazon_linux" {
@@ -104,28 +105,6 @@ resource "aws_vpc_security_group_egress_rule" "allow_ec2_connect" {
   to_port     = 22
   ip_protocol = "tcp"
 }
-
-# resource "aws_instance" "demo" {
-#   ami                         = data.aws_ami.amazon_linux.id
-#   instance_type               = "t3.micro"
-#   subnet_id                   = data.aws_subnet.public.id
-#   associate_public_ip_address = true
-#   vpc_security_group_ids      = [aws_security_group.ec2.id]
-#   iam_instance_profile        = module.iam.instance_profile_name
-
-#   user_data = <<-EOF
-#     #!/bin/bash
-#     dnf install -y nginx
-#     systemctl enable nginx
-#     systemctl start nginx
-
-#     echo "<h1>Terraform EC2 Demo</h1>" > /usr/share/nginx/html/index.html
-#   EOF
-
-#   tags = {
-#     Name = "demo-web"
-#   }
-# }
 
 resource "aws_launch_template" "web" {
   name_prefix            = "web-"

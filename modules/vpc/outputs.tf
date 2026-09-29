@@ -3,16 +3,18 @@ output "vpc_id" {
   value       = aws_vpc.main.id
 }
 
-output "subnet_ids" {
-  description = "IDs of the public and private subnets"
+output "public_subnet_ids" {
+  description = "IDs of the public subnets"
 
   value = {
-    public = {
       for az, subnet in aws_subnet.public : az => subnet.id
     }
+  }
 
-    private = {
+output "private_subnet_ids" {
+  description = "IDs of the private subnets"
+
+  value= {
       for az, subnet in aws_subnet.private : az => subnet.id
     }
   }
-}
