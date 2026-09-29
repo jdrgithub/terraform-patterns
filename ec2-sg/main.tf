@@ -13,3 +13,32 @@ module "ec2" {
   subnet_id = module.vpc.public_subnet_ids["us-east-1a"]
 }
 
+module "secret" {
+  source      = "../module/secrets"
+  
+  name        = "dev/demo-app/api-key"
+  description = "API key used by the demo application"
+
+  tags = {
+    Environment = "dev"
+  }
+
+}
+
+module "iam" {
+  source = "../modules/iam"
+
+  bucket_arn = ""
+  secret_arn = module.secret.secret_arn
+
+}
+
+module "secret" {
+  source      = "../modules/secrets"
+  name        = "dev/demo-app/api-key"
+  description = "API key for app"
+
+  tags = {
+    Environment = "dev"
+  }
+} 
