@@ -12,9 +12,9 @@ module "iam" {
 module "vpc" {
   source = "../modules/vpc"
 
-  vpc_cidr    = var.vpc_cidr
-  name_prefix = var.name_prefix
-  public_subnets     = var.public_subnets
+  vpc_cidr        = var.vpc_cidr
+  name_prefix     = var.name_prefix
+  public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
 }
 
@@ -107,16 +107,16 @@ resource "aws_vpc_security_group_egress_rule" "allow_ec2_connect" {
 }
 
 resource "aws_launch_template" "web" {
-  name_prefix            = "web-"
-  image_id               = data.aws_ami.amazon_linux.id
-  instance_type          = "t3.micro"
+  name_prefix   = "web-"
+  image_id      = data.aws_ami.amazon_linux.id
+  instance_type = "t3.micro"
   # vpc_security_groups_ids doesn't work.  add below to network_interfaces
   # https://github.com/hashicorp/terraform-provider-aws/issues/4570 
   # vpc_security_group_ids = [aws_security_group.ec2.id] 
-  
+
   network_interfaces {
     associate_public_ip_address = true
-    security_groups = [aws_security_group.ec2.id]
+    security_groups             = [aws_security_group.ec2.id]
   }
 
   iam_instance_profile {

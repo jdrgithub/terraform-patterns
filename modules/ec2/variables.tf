@@ -5,12 +5,18 @@ variable "sg_cidr" {
 
 variable "vpc_id" {
   description = "VPC ID"
-  type = string 
+  type        = string
+}
+
+variable "instance_profile" {
+  description = "IAM instance profile for EC2"
+  type = string
+  default = null
 }
 
 variable "subnet_id" {
   description = "ID for the EC2 subnet"
-  type = string
+  type        = string
 }
 
 # variable "public_subnets" {

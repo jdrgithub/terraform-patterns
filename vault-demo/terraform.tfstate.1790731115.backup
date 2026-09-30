@@ -1,0 +1,108 @@
+{
+  "version": 4,
+  "terraform_version": "1.16.3",
+  "serial": 3,
+  "lineage": "b0319437-32c7-c3a6-c83c-aee47dde813c",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "vault_kv_secret_v2",
+      "name": "demo",
+      "provider": "provider[\"registry.terraform.io/hashicorp/vault\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cas": null,
+            "custom_metadata": [
+              {
+                "cas_required": false,
+                "data": {},
+                "delete_version_after": 0,
+                "max_versions": 0
+              }
+            ],
+            "data": {},
+            "data_json": "{\"api_key\":\"terraform-vault-12345\"}",
+            "data_json_wo": null,
+            "data_json_wo_version": null,
+            "delete_all_versions": false,
+            "disable_read": false,
+            "id": "terraform-kv/data/demo-app",
+            "metadata": {
+              "created_time": "2026-09-29T23:11:13.506967557Z",
+              "custom_metadata": "null",
+              "deletion_time": "",
+              "destroyed": "false",
+              "version": "1"
+            },
+            "mount": "terraform-kv",
+            "name": "demo-app",
+            "namespace": null,
+            "options": null,
+            "path": "terraform-kv/data/demo-app"
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "data"
+              }
+            ],
+            [
+              {
+                "type": "get_attr",
+                "value": "data_json"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "bnVsbA==",
+          "dependencies": [
+            "vault_mount.kv"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "vault_mount",
+      "name": "kv",
+      "provider": "provider[\"registry.terraform.io/hashicorp/vault\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "accessor": "kv_e82805d7",
+            "allowed_managed_keys": [],
+            "allowed_response_headers": [],
+            "audit_non_hmac_request_keys": [],
+            "audit_non_hmac_response_keys": [],
+            "default_lease_ttl_seconds": 0,
+            "delegated_auth_accessors": [],
+            "description": "KV secrets engine managed by Terraform",
+            "external_entropy_access": false,
+            "force_no_cache": false,
+            "id": "terraform-kv",
+            "identity_token_key": "",
+            "listing_visibility": "",
+            "local": false,
+            "max_lease_ttl_seconds": 0,
+            "namespace": null,
+            "options": {},
+            "passthrough_request_headers": [],
+            "path": "terraform-kv",
+            "plugin_version": null,
+            "seal_wrap": false,
+            "type": "kv-v2"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "bnVsbA=="
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

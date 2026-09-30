@@ -11,11 +11,13 @@ module "ec2" {
   sg_cidr   = var.sg_cidr
   vpc_id    = module.vpc.vpc_id
   subnet_id = module.vpc.public_subnet_ids["us-east-1a"]
+
+  instance_profile = module.iam.instance_profile_name
 }
 
 module "secret" {
-  source      = "../module/secrets"
-  
+  source = "../modules/secrets"
+
   name        = "dev/demo-app/api-key"
   description = "API key used by the demo application"
 
@@ -28,17 +30,6 @@ module "secret" {
 module "iam" {
   source = "../modules/iam"
 
-  bucket_arn = ""
   secret_arn = module.secret.secret_arn
 
 }
-
-module "secret" {
-  source      = "../modules/secrets"
-  name        = "dev/demo-app/api-key"
-  description = "API key for app"
-
-  tags = {
-    Environment = "dev"
-  }
-} 

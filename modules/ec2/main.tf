@@ -63,6 +63,8 @@ resource "aws_instance" "web" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.ec2.id]
 
+  iam_instance_profile = var.instance_profile
+
   user_data = <<-EOF
     #!/bin/bash
     dnf install -y nginx

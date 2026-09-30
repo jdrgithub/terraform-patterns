@@ -29,7 +29,7 @@ variable "public_subnets" {
   type = map(
     object(
       {
-        public_cidr  = string
+        public_cidr = string
       }
     )
   )
@@ -41,7 +41,7 @@ variable "private_subnets" {
   type = map(
     object(
       {
-        private_cidr  = string
+        private_cidr = string
       }
     )
   )

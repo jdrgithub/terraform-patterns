@@ -17,31 +17,8 @@ data "aws_iam_policy_document" "ec2_trust" {
 }
 
 resource "aws_iam_role" "ec2" {
-  name = "ec2_role"
+  name               = "ec2_role"
   assume_role_policy = data.aws_iam_policy_document.ec2_trust.json
-}
-
-resource "aws_iam_policy" "s3_read" {
-  count = var.bucket_arn ? 1 : 0
-
-  name        = "demo-s3-read"
-  description = "Allow EC2 to read from demo S3 bucket"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Effect = "Allow"
-
-        Action = [
-          "s3:GetObject"
-        ]
-
-        Resource = "${var.bucket_arn}/*"
-      }
-    ]
-  })
 }
 
 resource "aws_iam_policy" "s3_read" {
@@ -67,6 +44,31 @@ resource "aws_iam_policy" "s3_read" {
   })
 }
 
+resource "aws_iam_policy" "secrets_read" {
+
+  name        = "demo-secrets-read"
+  description = "Allow EC2 to read from demo application secret"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+      {
+        Effect = "Allow"
+
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+
+        Resource = var.secret_arn
+      }
+    ]
+  })
+}
+
+
+
+## ATTACH POLICIES TO EC2 ROLE
 
 resource "aws_iam_role_policy_attachment" "role-attach" {
   count = var.bucket_arn != null ? 1 : 0
@@ -74,6 +76,12 @@ resource "aws_iam_role_policy_attachment" "role-attach" {
   role       = aws_iam_role.ec2.name
   policy_arn = aws_iam_policy.s3_read[0].arn
 }
+
+resource "aws_iam_role_policy_attachment" "secrets-role-attach" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.secrets_read.arn
+}
+
 
 resource "aws_iam_instance_profile" "ec2" {
   name = "demo-ec2-profile"
